@@ -245,6 +245,65 @@ TRELLIS pipeline / architecture / weights © their authors.
 ```
 </details>
 
+## Citation
+
+If you use this fork, please cite the base model and the acceleration methods it builds on.
+
+**TRELLIS** (base model — Xiang et al., Microsoft, CVPR 2025):
+
+```bibtex
+@article{xiang2024structured,
+    title   = {Structured 3D Latents for Scalable and Versatile 3D Generation},
+    author  = {Xiang, Jianfeng and Lv, Zelong and Xu, Sicheng and Deng, Yu and Wang, Ruicheng and Zhang, Bowen and Chen, Dong and Tong, Xin and Yang, Jiaolong},
+    journal = {arXiv preprint arXiv:2412.01506},
+    year    = {2024}
+}
+```
+
+**HiCache** (Hermite-polynomial velocity forecasting):
+
+```bibtex
+@misc{hicache2025,
+  title={HiCache: Training-free Acceleration of Diffusion Models via Hermite Polynomial Feature Forecasting},
+  eprint={2508.16984},
+  archivePrefix={arXiv},
+  year={2025}
+}
+```
+
+**Adaptive Guidance** (unconditional-pass skipping):
+
+```bibtex
+@misc{adaptiveguidance2023,
+  title={Adaptive Guidance: Training-free Acceleration of Conditional Diffusion Models},
+  eprint={2312.12487},
+  archivePrefix={arXiv},
+  year={2023}
+}
+```
+
+**Fast-TRELLIS** (token-carving substrate the SLaT stage builds on):
+
+```bibtex
+@misc{fasttrellis,
+  title={Fast-TRELLIS: Token-carving acceleration for TRELLIS image-to-3D},
+  howpublished={\url{https://github.com/wlfeng0509/Fast-SAM3D/tree/Fast-TRELLIS}}
+}
+```
+
+**Dynamic Mode Decomposition** (the exponential-forecast basis underlying the DMD/`++` variant):
+
+```bibtex
+@article{schmid2010dmd,
+  title={Dynamic mode decomposition of numerical and experimental data},
+  author={Schmid, Peter J.},
+  journal={Journal of Fluid Mechanics},
+  volume={656},
+  pages={5--28},
+  year={2010}
+}
+```
+
 ## Weights & data
 
 Model weights and demo/example assets are **not** committed to this repo — only the acceleration
