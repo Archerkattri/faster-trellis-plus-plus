@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/banner.png" alt="faster-trellis-plus-plus" width="680">
+
 # ⚡ faster-trellis++
 
 **Training-free acceleration for [microsoft/TRELLIS](https://github.com/microsoft/TRELLIS) image-to-3D — the exponential (DMD) forecast variant of [`faster-trellis`](https://github.com/Archerkattri/faster-trellis), in one line of code.**
