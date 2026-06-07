@@ -1,4 +1,4 @@
-faster-trellis
+faster-trellis++
 Copyright (c) 2026 Krishi Attri
 Licensed under the MIT License (see LICENSE).
 
@@ -13,7 +13,7 @@ Copyright (c) Microsoft Corporation. Licensed under the MIT License.
 https://github.com/microsoft/TRELLIS
 
 The TRELLIS image-to-3D pipeline, model architecture, and pretrained weights are
-the work of the TRELLIS authors. faster-trellis adds a training-free inference
+the work of the TRELLIS authors. faster-trellis++ adds a training-free inference
 acceleration layer on top of that pipeline and does not modify the weights.
 
 -------------------------------------------------------------------------------
