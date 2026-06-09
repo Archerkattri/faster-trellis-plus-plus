@@ -27,7 +27,7 @@ base generator, and the `+` / `++` suffix is a **method choice**, not a rival pr
 | Hunyuan3D-2 mini | `hunyuan2-plus` | `hunyuan2-plus-plus` |
 | SAM 3D Objects | `sam3d-plus` | `sam3d-plus-plus` |
 | Fast-SAM3D | `fastsam3d-plus` | `fastsam3d-plus-plus` |
-| DiT-XL/2 (ImageNet) | `dit-plus` | `dit-plus-plus` |
+| DiT-XL/2 (ImageNet) | `dit-plus` *(unreleased)* | `dit-plus-plus` *(unreleased)* |
 | TRELLIS (v1) | `faster-trellis` | `faster-trellis-plus-plus` |
 | TRELLIS.2-4B (v2) | `hermit-trellis2` | `hermit-trellis2-plus-plus` |
 
@@ -281,3 +281,12 @@ Model weights and demo/example assets are **not** committed to this repo — onl
 architecture (code + integration). Download the base-model weights from the upstream project,
 [microsoft/TRELLIS](https://github.com/microsoft/TRELLIS), per its instructions, and point the loader at them (see the code / upstream README). This
 keeps the repository lightweight and avoids redistributing third-party weights.
+
+---
+
+## Family
+
+Part of the **HiCache++ acceleration family**.
+
+- **Family hub:** [`hicache-plus-plus`](https://github.com/Archerkattri/hicache-plus-plus) — the basis library behind this adapter.
+- **Sibling:** [`faster-trellis`](https://github.com/Archerkattri/faster-trellis) — the same base model with the HiCache (scaled-Hermite) polynomial-forecast variant.
