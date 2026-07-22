@@ -4,6 +4,12 @@
 
 # ⚡ faster-trellis++
 
+<p>
+  <a href="https://github.com/Archerkattri/faster-trellis-plus-plus/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Archerkattri/faster-trellis-plus-plus?color=1f6feb"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/Archerkattri/faster-trellis-plus-plus?color=0d9488"></a>
+</p>
+
+
 **Training-free acceleration for [microsoft/TRELLIS](https://github.com/microsoft/TRELLIS) image-to-3D — the exponential (DMD) forecast variant of [`faster-trellis`](https://github.com/Archerkattri/faster-trellis), in one line of code.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
