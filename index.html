@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>faster-trellis-plus-plus — Training-free DMD forecast acceleration for TRELLIS image-to-3D</title>
+<meta name="description" content="Training-free acceleration for microsoft/TRELLIS image-to-3D — the exponential (DMD) forecast variant of faster-trellis, in one line of code.">
+<style>
+  :root{
+    --bg:#ffffff; --ink:#17202a; --muted:#5a6572; --line:#e3e8ee;
+    --accent:#0c52d6; --accent-ink:#0c52d6; --code-bg:#f4f6f8; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:16px;line-height:1.6}
+  .wrap{max-width:860px;margin:0 auto;padding:0 22px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  /* top bar */
+  .top{border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:baseline;gap:14px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+  .top .repo{font-weight:700;font-size:17px;color:var(--ink)}
+  .top .repo a{color:var(--ink)}
+  .top .ver{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line);padding:1px 8px;border-radius:20px}
+  .top nav{margin-left:auto;display:flex;gap:16px;font-size:14px}
+  /* hero */
+  .hero{padding:34px 0 8px}
+  .hero img.banner{width:100%;height:auto;border:1px solid var(--line);display:block}
+  .hero h1{font-size:30px;line-height:1.25;margin:22px 0 6px;letter-spacing:-0.01em}
+  .hero p.lede{color:var(--muted);margin:0 0 14px;max-width:62ch}
+  pre{background:var(--code-bg);border:1px solid var(--line);padding:12px 14px;overflow-x:auto;
+    font-family:var(--mono);font-size:13px;line-height:1.55;margin:0 0 8px}
+  pre .c{color:#6a737d}
+  /* sections */
+  section{padding:26px 0 6px;border-top:1px solid var(--line);margin-top:26px}
+  section:first-of-type{border-top:0}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+  .sec-num{font-family:var(--mono);font-size:13px;color:var(--accent-ink);font-weight:700}
+  .sec-head h2{font-size:20px;margin:0}
+  table.ev{width:100%;border-collapse:collapse;font-size:14px}
+  table.ev th,table.ev td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.ev th{color:var(--muted);font-weight:600;width:34%}
+  table.ev td b{font-variant-numeric:tabular-nums}
+  .ok{color:#0a7b3c;font-weight:700}
+  .gallery{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .gallery figure{margin:0;border:1px solid var(--line)}
+  .gallery img,.gallery video{width:100%;height:auto;display:block}
+  .gallery figcaption{font-size:13px;color:var(--muted);padding:8px 10px;border-top:1px solid var(--line)}
+  .limits{background:#fbfcfd;border:1px solid var(--line);padding:14px 16px;font-size:14px}
+  .limits ul{margin:8px 0 0;padding-left:20px}
+  .limits li{margin:4px 0}
+  footer{border-top:1px solid var(--line);margin-top:30px;padding:16px 0 30px;color:var(--muted);font-size:13px}
+  footer .wrap{display:flex;gap:16px;flex-wrap:wrap}
+  @media (max-width:640px){.gallery{grid-template-columns:1fr}.hero h1{font-size:24px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <span class="repo"><a href="https://github.com/Archerkattri/faster-trellis-plus-plus">faster-trellis-plus-plus</a></span>
+  <span class="ver">0.1.1</span>
+  <nav><a href="https://github.com/Archerkattri/faster-trellis-plus-plus">Code</a><a href="https://github.com/Archerkattri/faster-trellis-plus-plus/releases/tag/v0.1.1">Release</a></nav>
+</div></header>
+<main class="wrap">
+  <div class="hero">
+    <img class="banner" src="assets/banner.png" alt="faster-trellis-plus-plus banner">
+    <h1>Training-free DMD velocity forecasts accelerate TRELLIS image-to-3D</h1>
+    <p class="lede">Training-free acceleration for microsoft/TRELLIS image-to-3D — the exponential (DMD) forecast variant of faster-trellis, in one line of code.</p>
+    <pre>git clone --recurse-submodules https://github.com/Archerkattri/faster-trellis-plus-plus
+cd faster-trellis-plus-plus
+<span class="c"># TRELLIS deps (CUDA toolchain required); see setup.sh for the full option list.</span>
+. ./setup.sh --new-env --basic --xformers --flash-attn --spconv --nvdiffrast
+<span class="c"># Deployment-contract runtime (budget/telemetry/manifest):</span>
+pip install "hicache-pp @ git+https://github.com/Archerkattri/hicache-plus-plus@master"</pre>
+  </div>
+  <section><div class="sec-head"><span class="sec-num">01</span><h2>Evidence</h2></div>
+    <table class="ev"><tr><th>DMD forecast (this repo)</th><td><b>0.829</b> F-score@0.05 at <b>2.76×</b> speedup (−0.010 vs vanilla)</td></tr><tr><th>Hermite parent (faster-trellis)</th><td><b>0.825</b> F-score@0.05 at <b>2.82×</b> speedup (−0.014 vs vanilla)</td></tr><tr><th>Vanilla baseline (uncached)</th><td><b>0.839</b> F-score@0.05 at <b>1.00×</b></td></tr><tr><th>DMD margin over Hermite</th><td><b>+0.005</b> at matched speedup on the deployed interval-3 schedule</td></tr><tr><th>Benchmark scope</th><td><b>n = 31</b> matched objects, Toys4K mesh F-score@0.05, sparse-structure stage</td></tr><tr><th>Deployed defaults</th><td>SS interval <b>3</b>, carve ratio <b>0.25</b>, first-enhance <b>2</b>, DMD history <b>6</b></td></tr><tr><th>CPU contract tests</th><td><b>5</b> tests incl. DMD, run in CI against hicache-pp master</td></tr></table>
+  </section>
+  <section><div class="sec-head"><span class="sec-num">02</span><h2>Media</h2></div>
+    <div class="gallery"><figure><img src="assets/readme_flow.svg" alt="Sampler integration diagram"><figcaption>Sampler integration: token carving and velocity forecasting are controlled separately.</figcaption></figure><figure><img src="assets/banner.png" alt="faster-trellis-plus-plus banner"><figcaption>Project banner: faster-trellis++ image-to-3D acceleration.</figcaption></figure></div>
+  </section>
+  <section><div class="sec-head"><span class="sec-num">03</span><h2>Install &amp; verify</h2></div>
+    <pre><span class="c"># CPU contract tests (CI cpu-contract job)</span>
+python -m compileall -q trellis tests faster_utils_slat fft token_slat
+python tests/test_hicache.py          <span class="c"># Hermite math asserts, expect ALL PASS</span>
+python tests/test_adaptive_cfg.py     <span class="c"># guidance math asserts, expect ALL PASS</span>
+python tests/test_hicache_contract.py <span class="c"># 5 contract tests incl. DMD, expect 5x [PASS]</span></pre>
+  </section>
+  <section><div class="sec-head"><span class="sec-num">04</span><h2>Limits</h2></div>
+    <div class="limits"><p style="margin:0">What this release does <b>not</b> claim (from the release notes):</p><ul><li>Historical results card "is not a current acceptance result and does not establish a universal speedup, losslessness, or quality ordering" — re-run the manifest command in example_faster.py on the target GPU before making a new claim (README).</li><li>CPU contract tests "exercise cache lifecycle and backend selection, not model quality or end-to-end inference" (tests/test_hicache_contract.py).</li><li>Release scope is deployment-contract adoption plus "5 CPU contract tests (incl. DMD) in CI against hicache-pp master" (v0.1.1 notes).</li></ul></div>
+  </section>
+</main>
+<footer><div class="wrap"><span>MIT · © 2026 Krishi Attri</span><span></span><span style="margin-left:auto"><a href="https://github.com/Archerkattri/faster-trellis-plus-plus">faster-trellis-plus-plus</a></span></div></footer>
+</body>
+</html>
