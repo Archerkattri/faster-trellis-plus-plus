@@ -22,6 +22,13 @@
 
 </div>
 
+## Sampler integration
+
+![faster-trellis-plus-plus sampler integration](assets/readme_flow.svg)
+
+Token carving and velocity forecasting are controlled separately. The selected Hermite or DMD
+backend acts only inside the TRELLIS flow loop and reports compute, forecast, and fallback steps.
+
 ## When to use this repo
 
 These repos are **complementary accelerators, not competing solutions** — each speeds up a *different*
@@ -86,6 +93,8 @@ git clone --recurse-submodules https://github.com/Archerkattri/faster-trellis-pl
 cd faster-trellis-plus-plus
 # TRELLIS deps (CUDA toolchain required); see setup.sh for the full option list.
 . ./setup.sh --new-env --basic --xformers --flash-attn --spconv --nvdiffrast
+# Deployment-contract runtime (budget/telemetry/manifest):
+pip install "hicache-pp @ git+https://github.com/Archerkattri/hicache-plus-plus@master"
 ```
 
 ```python
@@ -93,6 +102,7 @@ from trellis.pipelines import TrellisImageTo3DPipeline
 
 pipeline = TrellisImageTo3DPipeline.from_pretrained("microsoft/TRELLIS-image-large").cuda()
 pipeline.enable_faster_mode("faster", hicache_kwargs={"backend": "dmd"})  # ← exponential DMD forecast
+print(pipeline.acceleration_status())               # backend + per-stage report
 
 outputs = pipeline.run(image, formats=["mesh", "gaussian", "radiance_field"])
 ```
@@ -125,7 +135,12 @@ export SPCONV_ALGO=native
 
 ---
 
-## Results
+## Historical results (as measured)
+
+The following card is retained as prior-run evidence from the stated benchmark setup. It is not a
+current acceptance result and does not establish a universal speedup, losslessness, or quality
+ordering. Re-run the manifest command in `example_faster.py` on the target GPU before making a new
+claim.
 
 **TRELLIS v1, Toys4K mesh F-score@0.05** (n = 31 matched objects, sparse-structure stage —
 swapping *only* the SS forecast basis Hermite→DMD, same carved-hybrid schedule + token-carved SLaT):
