@@ -313,21 +313,39 @@ def dmd_forecast_state(state: Dict[str, Any]) -> torch.Tensor:
     ``lambda**(k/spacing)``). Falls back to the Hermite forecast during warm-up or when the
     uniform window is shorter than 4 -- a real-valued complex pole costs 2 real DOF, so even
     one oscillatory mode needs 3 snapshot-pairs (4 snapshots); with 2 pairs the fit aliases."""
-    snaps = state.get("dmd_snapshots", [])
-    if len(snaps) >= 4:
-        steps = [s for s, _ in snaps]
-        spacing = steps[-1] - steps[-2]
-        if spacing > 0:
-            tail = [snaps[-1], snaps[-2]]
-            j = len(snaps) - 2
-            while j - 1 >= 0 and steps[j] - steps[j - 1] == spacing:
-                tail.append(snaps[j - 1])
-                j -= 1
-            if len(tail) >= 4:
-                vels = [v for _, v in reversed(tail)]            # oldest..newest
-                k = (state["step"] - steps[-1]) / spacing        # fractional horizon
-                return dmd_forecast(vels, k)
+    inputs = _dmd_forecast_inputs(state)
+    if inputs is not None:
+        vels, k = inputs
+        return dmd_forecast(vels, k)
     return hicache_forecast(state)
+
+
+def _dmd_forecast_inputs(state: Dict[str, Any]):
+    """Return the uniform DMD window and horizon when warm-up is complete."""
+    snaps = state.get("dmd_snapshots", [])
+    if len(snaps) < 4:
+        return None
+    steps = [step for step, _ in snaps]
+    spacing = steps[-1] - steps[-2]
+    if spacing <= 0:
+        return None
+    tail = [snaps[-1], snaps[-2]]
+    j = len(snaps) - 2
+    while j - 1 >= 0 and steps[j] - steps[j - 1] == spacing:
+        tail.append(snaps[j - 1])
+        j -= 1
+    if len(tail) < 4:
+        return None
+    velocities = [velocity for _, velocity in reversed(tail)]
+    horizon = (state["step"] - steps[-1]) / spacing
+    return velocities, horizon
+
+
+def forecast_method_for_state(state: Dict[str, Any]) -> str:
+    """Name the forecast basis that will run, including DMD warm-up behavior."""
+    if normalize_backend(state.get("backend", "hermite")) == "dmd" and _dmd_forecast_inputs(state) is not None:
+        return "dmd"
+    return "hermite"
 
 
 # ---------------------------------------------------------------------------
@@ -339,8 +357,7 @@ def hicache_forecast_state(state: Dict[str, Any]) -> torch.Tensor:
     This is the compatibility switch used by the sampler.  Keeping dispatch
     here makes Hermite and DMD share lifecycle, reset, and telemetry semantics.
     """
-    backend = normalize_backend(state.get("backend", "hermite"))
-    if backend == "dmd":
+    if forecast_method_for_state(state) == "dmd":
         return dmd_forecast_state(state)
     return hicache_forecast(state)
 
@@ -351,6 +368,23 @@ def _budget_memory_mb(value, is_sparse: bool):
         return float(value.numel() * value.element_size()) / (1024.0 * 1024.0)
     except (AttributeError, TypeError, ValueError):
         return None
+
+
+def _validate_budget_backend(budget: CacheBudget, backend: str) -> None:
+    """Reject budget methods and fallbacks this adapter cannot execute."""
+    if budget.backend not in ("full", backend):
+        raise ValueError(
+            f"HiCache budget backend {budget.backend!r} does not match the configured "
+            f"forecast backend {backend!r}; supported budget backends are 'full' and {backend!r}"
+        )
+    if budget.fallback != "full":
+        raise ValueError(
+            "HiCache only implements fallback='full'; non-full fallback methods are unsupported"
+        )
+    if budget.max_predicted_error is not None:
+        raise ValueError(
+            "HiCache has no validated forecast-error estimate; max_predicted_error cannot be enforced"
+        )
 
 
 def _ensure_budget_runtime(sampler, state, model, x_t, cond, stage, is_sparse):
@@ -421,6 +455,7 @@ def _patch_sampler(sampler, *, is_sparse: bool, cfg: Dict[str, Any], stage: str)
         )
     elif not isinstance(budget, CacheBudget):
         budget = CacheBudget.from_mapping(budget)
+    _validate_budget_backend(budget, backend)
     sampler._hicache_budget = budget
     sampler._hicache_backend = backend
     sampler._hicache_stage = stage
@@ -470,6 +505,8 @@ def _patch_sampler(sampler, *, is_sparse: bool, cfg: Dict[str, Any], stage: str)
         if budget is not None and not isinstance(budget, CacheBudget):
             budget = CacheBudget.from_mapping(budget)
         if budget is not None:
+            _validate_budget_backend(budget, backend)
+        if budget is not None:
             sampler._hicache_budget = budget
         if max_horizon is not None or max_memory_mb is not None or audit_budget:
             current = sampler._hicache_budget.as_dict()
@@ -479,7 +516,9 @@ def _patch_sampler(sampler, *, is_sparse: bool, cfg: Dict[str, Any], stage: str)
                 current["max_memory_mb"] = max_memory_mb
             if audit_budget:
                 current["audit_budget"] = audit_budget
-            sampler._hicache_budget = CacheBudget.from_mapping(current)
+            updated_budget = CacheBudget.from_mapping(current)
+            _validate_budget_backend(updated_budget, backend)
+            sampler._hicache_budget = updated_budget
         return sampler
 
     def _get_manifest():
@@ -487,7 +526,14 @@ def _patch_sampler(sampler, *, is_sparse: bool, cfg: Dict[str, Any], stage: str)
         if manifest is None:
             runtime = getattr(sampler, "_budget_runtime", None)
             manifest = runtime.manifest.as_dict() if runtime is not None else None
-        return copy.deepcopy(manifest) if manifest is not None else None
+        if manifest is None:
+            return None
+        result = copy.deepcopy(manifest)
+        result["adapter_measurement_scope"] = {
+            "memory_mb": "dense input tensor bytes or sparse feature bytes only; excludes coordinates, model, cache state and allocator overhead",
+            "predicted_error": "unavailable; error-capped budgets are rejected",
+        }
+        return result
 
     def _save_manifest(destination):
         manifest = _get_manifest()
@@ -521,10 +567,11 @@ def _patch_sampler(sampler, *, is_sparse: bool, cfg: Dict[str, Any], stage: str)
         scheduled = hicache_decide(state)
         runtime = _ensure_budget_runtime(sampler, state, model, x_t, cond, stage, is_sparse)
         forecast_requested = scheduled == "forecast"
+        forecast_method = forecast_method_for_state(state) if forecast_requested else "full"
         budget_decision = runtime.decide(
             str(stage),
             horizon=max(1, int(state.get("counter", 0))) if forecast_requested else 0,
-            method=runtime.budget.backend,
+            method=forecast_method,
             supported=True,
             memory_mb=_budget_memory_mb(x_t, is_sparse),
             force_full=(not forecast_requested or runtime.budget.backend == "full"),
@@ -567,7 +614,7 @@ def _patch_sampler(sampler, *, is_sparse: bool, cfg: Dict[str, Any], stage: str)
         pred_x_prev = x_t - (t - t_prev) * pred_v
         state["step"] += 1
         runtime.record_measurement(
-            str(stage), state.get("backend", "hermite"),
+            str(stage), forecast_method,
             wall_time_ms=(time.perf_counter() - work_started) * 1000.0,
         )
         return edict({"pred_x_prev": pred_x_prev, "pred_x_0": pred_x_0})
